@@ -69,6 +69,18 @@ Summary: 3 issues found
 | **Files** | Required config files, .env setup |
 | **Docker** | Compose validity, image availability |
 | **Versions** | Semver compatibility with project requirements |
+| **Build contexts** | Dockerfile exists in build.context paths |
+| **Source code** | Env vars used in code but not defined |
+
+---
+
+## New in v2.0
+
+- **Project config file** — `.devcheck.yaml` for custom rules, required vars, ignored checks
+- **Tool version checks** — verify docker, docker-compose, node, go, python versions
+- **Build context validation** — ensures Dockerfiles exist in build.context paths  
+- **Fix list generation** — generate actionable markdown checklists
+- **Check profiles** — default, strict, ci, minimal, full
 
 ---
 
@@ -93,9 +105,9 @@ Summary: 3 issues found
 
 ## Get it
 
-**$19** — one-time purchase, standalone macOS/Linux/Windows binary.
+**$29** — one-time purchase, standalone macOS/Linux/Windows binary.
 
-👉 [Download on Gumroad](YOUR_GUMROAD_LINK_HERE)
+👉 [Download on Gumroad](https://ecent.gumroad.com/l/rafogb)
 
 ---
 

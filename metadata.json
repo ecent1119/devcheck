@@ -1,0 +1,29 @@
+{
+  "product": {
+    "name": "devcheck",
+    "tagline": "Local project readiness inspector — know if your dev environment will actually work",
+    "description": "Scans projects for requirements, checks dependencies and versions, validates Docker Compose, verifies port availability, and reports what's missing before you waste time.",
+    "price": {
+      "amount": 9.00,
+      "currency": "USD",
+      "type": "one-time"
+    },
+    "category": "Developer Tools",
+    "tags": ["docker", "development", "environment", "validation", "cli", "devops"],
+    "platforms": ["darwin-amd64", "darwin-arm64", "linux-amd64", "linux-arm64", "windows-amd64"],
+    "requirements": {
+      "os": ["macOS", "Linux", "Windows"],
+      "dependencies": []
+    },
+    "links": {
+      "documentation": "https://github.com/stackgen-cli/devcheck",
+      "support": "https://github.com/stackgen-cli/devcheck/issues"
+    },
+    "metadata": {
+      "license": "Proprietary",
+      "author": "StackGen CLI",
+      "created": "2024-01-01",
+      "version": "1.0.0"
+    }
+  }
+}
