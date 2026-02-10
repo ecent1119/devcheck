@@ -103,6 +103,18 @@ Summary: 3 issues found
 
 ---
 
+## Common problems this solves
+
+- "works on my machine docker"
+- "docker compose fails after clone"
+- "check if dev environment ready"
+- "missing dependencies docker project"
+- "port already in use docker compose"
+- "validate local dev setup"
+- "onboarding new developer docker"
+
+---
+
 ## Get it
 
 👉 [Download on Gumroad](https://ecent.gumroad.com/l/rafogb)
@@ -117,6 +129,10 @@ Summary: 3 issues found
 | **[envgraph](https://github.com/stackgen-cli/envgraph)** | Scan and validate environment variable usage |
 | **[dataclean](https://github.com/stackgen-cli/dataclean)** | Reset local dev data safely |
 | **[compose-diff](https://github.com/stackgen-cli/compose-diff)** | Semantic Docker Compose diff |
+
+---
+
+If this tool saved you time, consider starring the repo.
 
 ---
 
