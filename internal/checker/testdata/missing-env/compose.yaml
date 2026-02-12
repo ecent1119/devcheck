@@ -1,0 +1,7 @@
+services:
+  web:
+    image: node:20
+    environment:
+      - DB_HOST=${DB_HOST}
+      - SECRET_TOKEN=${SECRET_TOKEN}
+      - REDIS_URL=${REDIS_URL}

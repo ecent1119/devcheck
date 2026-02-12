@@ -1,141 +1,219 @@
 # devcheck
 
-Local project readiness inspector — know if your dev environment will actually work.
+**Free and open source** — Local project readiness inspector. Find out what's missing before "it doesn't work on my machine."
 
----
+devcheck scans your repository and tells you what's needed to run the project locally: missing env files, undefined variables, unmet dependencies, and unclear setup steps.
 
-## The problem
+## The Problem
 
-- Clone repo → run commands → something fails → debug for 30 minutes
-- "Works on my machine" is always the answer
-- Missing dependencies discovered at runtime
-- Docker version mismatches cause silent failures
-- README instructions are outdated
+You clone a repo. You run `docker compose up`. It fails.
 
----
-
-## What it does
-
-- Scans project for requirements (Docker, Node, Go, Python, etc.)
-- Checks if dependencies are installed and correct versions
-- Validates Docker Compose can start
-- Verifies ports aren't already in use
-- Reports what's missing before you waste time
-
----
-
-## Example output
-
-```bash
-$ devcheck
-
-Project: my-app
-─────────────────
-
-Runtime Requirements:
-  ✅ Docker 24.0.0 (required: >=20.0.0)
-  ✅ docker-compose 2.24.0
-  ✅ Node.js 20.11.0 (required: >=18.0.0)
-  ❌ Go not installed (required: >=1.21.0)
-
-Port Availability:
-  ✅ 3000 available
-  ✅ 5432 available
-  ❌ 6379 in use by redis-server (PID 1234)
-
-Docker Compose:
-  ✅ docker-compose.yml valid
-  ⚠️  .env.example exists but .env missing
-  ✅ All referenced images pullable
-
-Files:
-  ✅ package.json present
-  ❌ go.mod missing (expected for Go project)
-
-Summary: 3 issues found
-  • Install Go 1.21+
-  • Stop redis-server on port 6379 or change compose port
-  • Copy .env.example to .env
+```
+ERROR: environment variable DATABASE_URL is not set
 ```
 
----
+Now you're grepping through files, checking READMEs, and asking teammates. devcheck does this for you:
 
-## What it checks
+```
+devcheck scan
 
-| Category | Checks |
-|----------|--------|
-| **Runtimes** | Docker, Node, Go, Python, Java, Rust, .NET |
-| **Ports** | Compose-defined ports availability |
-| **Files** | Required config files, .env setup |
-| **Docker** | Compose validity, image availability |
-| **Versions** | Semver compatibility with project requirements |
-| **Build contexts** | Dockerfile exists in build.context paths |
-| **Source code** | Env vars used in code but not defined |
+Blocking:
+  ✗ docker-compose.yml references ${DATABASE_URL} but it is not defined
 
----
+Warnings:
+  ⚠ .env.example exists but .env is missing
+  ⚠ .env.example has API_KEY but .env does not
 
-## New in v2.0
+Info:
+  ℹ Detected Node.js project (package.json)
+  ℹ Likely entrypoint: pnpm install && pnpm dev (from README.md)
+```
 
+## Features
+
+- **Env var analysis** — finds `${VAR}` in compose files and checks if they're defined
+- **Missing file detection** — flags missing `.env` when `.env.example` exists
+- **Compose validation** — checks depends_on references, undefined services
+- **Language detection** — identifies Node, Go, Python, Rust, Java projects
+- **Run hints** — scans README for setup instructions
 - **Project config file** — `.devcheck.yaml` for custom rules, required vars, ignored checks
 - **Tool version checks** — verify docker, docker-compose, node, go, python versions
-- **Build context validation** — ensures Dockerfiles exist in build.context paths  
+- **Build context validation** — ensures Dockerfiles exist in build.context paths
 - **Fix list generation** — generate actionable markdown checklists
+- **Source code scanning** — detect env vars used in code but not defined
+- **Multiple outputs** — text, JSON, or Markdown checklist
 - **Check profiles** — default, strict, ci, minimal, full
 
----
+## Quick Start
 
-## Output formats
+```bash
+# Scan current directory
+devcheck scan
 
-| Format | Use case |
-|--------|----------|
-| `--format text` | Human-readable terminal output |
-| `--format json` | CI integration, scripts |
-| `--format markdown` | Documentation |
+# Scan specific path
+devcheck scan /path/to/project
 
----
+# JSON output for CI
+devcheck scan --format json
 
-## Scope
+# Fail CI if blocking issues found
+devcheck scan --strict
 
-- Read-only inspection
-- No modifications to system
-- No installations
-- No telemetry
+# Use a check profile
+devcheck scan --profile ci
 
----
+# Check tool versions
+devcheck scan --check-tools
 
-## Common problems this solves
+# Generate fix checklist
+devcheck scan --fix-list fixes.md
 
-- "works on my machine docker"
-- "docker compose fails after clone"
-- "check if dev environment ready"
-- "missing dependencies docker project"
-- "port already in use docker compose"
-- "validate local dev setup"
-- "onboarding new developer docker"
+# Use custom config file
+devcheck scan --config .devcheck.yaml
+```
 
----
+## Configuration File
 
-## Get it
+Create `.devcheck.yaml` for project-specific rules:
 
-👉 [Download on Gumroad](https://ecent.gumroad.com/l/rafogb)
+```yaml
+# Custom validation rules
+custom_rules:
+  - id: "DB_REQUIRED"
+    pattern: "^DATABASE_"
+    required: true
+    description: "Database variables must be defined"
+    severity: blocking
 
----
+# Minimum tool versions
+tool_versions:
+  docker: "20.10.0"
+  docker_compose: "2.0.0"
+  node: "18.0.0"
 
-## Related tools
+# Finding codes to ignore
+ignore_codes:
+  - "HINT001"
 
-| Tool | Purpose |
-|------|---------|
-| **[stackgen](https://github.com/stackgen-cli/stackgen)** | Generate local dev Docker Compose stacks |
-| **[envgraph](https://github.com/stackgen-cli/envgraph)** | Scan and validate environment variable usage |
-| **[dataclean](https://github.com/stackgen-cli/dataclean)** | Reset local dev data safely |
-| **[compose-diff](https://github.com/stackgen-cli/compose-diff)** | Semantic Docker Compose diff |
+# Environment variables that must always be defined
+required_env_vars:
+  - "NODE_ENV"
+  - "DATABASE_URL"
 
----
+# Map service names to expected Dockerfile paths
+build_contexts:
+  api: "./api"
+  web: "./frontend"
+```
 
-If this tool saved you time, consider starring the repo.
+## Example Output
 
----
+```
+devcheck v1.0.0
+
+Scanning: /Users/dev/myproject
+
+Artifacts Found:
+  ✓ docker-compose.yml
+  ✓ .env.example
+  ✗ .env (missing)
+  ✓ package.json (Node.js)
+  ✓ pnpm-lock.yaml
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Blocking (2):
+  ✗ ENV001  ${DATABASE_URL} referenced in docker-compose.yml but not defined
+     Fix: Add DATABASE_URL to .env file
+
+  ✗ ENV002  ${REDIS_URL} referenced in docker-compose.yml but not defined
+     Fix: Add REDIS_URL to .env file
+
+Warnings (1):
+  ⚠ ENV003  .env.example exists but .env is missing
+     Fix: Copy .env.example to .env and fill in values
+
+Info (2):
+  ℹ LANG001  Detected Node.js project with pnpm
+  ℹ HINT001  Likely entrypoint: pnpm install && pnpm dev
+```
+
+## What It Is / What It Isn't
+
+**It is:**
+- A readiness checker for local development
+- A pre-onboarding validator
+- A way to document what's needed to run a project
+
+**It is not:**
+- A build tool
+- A dependency installer
+- A security scanner
+- A production validator
+
+## Installation
+
+Download the binary for your platform from [Gumroad](https://example.gumroad.com/l/devcheck).
+
+```bash
+# macOS / Linux
+chmod +x devcheck
+sudo mv devcheck /usr/local/bin/
+
+# Verify
+devcheck version
+```
+
+## Flags Reference
+
+| Flag | Description |
+|------|-------------|
+| `--format` | Output format: `text`, `json`, `markdown`, `checklist` |
+| `--compose` | Specify compose file path |
+| `--env` | Specify env file(s) |
+| `--strict` | Exit 1 if blocking findings exist |
+| `--profile` | Check profile: `default`, `strict`, `ci`, `minimal`, `full` |
+| `--check-tools` | Check tool versions (docker, docker-compose, etc.) |
+| `--config` | Custom config file path |
+| `--fix-list` | Generate fix checklist to file (markdown) |
+| `--no-color` | Disable color output |
+
+## Exit Codes
+
+- `0` — Scan completed successfully
+- `1` — Scan completed, `--strict` mode and blocking findings found
+- `2` — Parse error or invalid input
+
+## Finding Codes
+
+| Code | Description |
+|------|-------------|
+| ENV001 | Variable referenced but not defined |
+| ENV002 | Variable in .env.example missing from .env |
+| ENV003 | .env missing when .env.example exists |
+| CMP001 | depends_on references unknown service |
+| LANG001 | Language/framework detected |
+| HINT001 | Run instructions found |
+
+## Related Tools
+
+devcheck is part of a local development toolchain:
+
+- **[stackgen](https://github.com/ecent1119/stackgen)** — Generate docker-compose.yml for any stack
+- **[envgraph](https://github.com/ecent1119/envgraph)** — Visualize environment variable flow
+- **[dataclean](https://github.com/ecent1119/dataclean)** — Snapshot and reset Docker volumes
+- **[compose-diff](https://github.com/ecent1119/compose-diff)** — Semantic diff for compose files
+
+## Support This Project
+
+**devcheck is free and open source.**
+
+If this tool saved you time, consider sponsoring:
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-❤️-red?logo=github)](https://github.com/sponsors/ecent1119)
+
+Your support helps maintain and improve this tool.
 
 ## License
 
-MIT — this repository contains documentation and examples only.
+MIT License — see [LICENSE](LICENSE) for details.
